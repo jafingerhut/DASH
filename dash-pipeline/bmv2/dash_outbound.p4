@@ -23,11 +23,13 @@ control outbound(inout headers_t hdr,
 
     action route_vnet_direct(bit<16> dst_vnet_id,
                              bit<1> is_overlay_ip_v4_or_v6,
-                             IPv4ORv6Address overlay_ip,
+                             HalfIPv4ORv6Address overlay_ip_hi,
+                             HalfIPv4ORv6Address overlay_ip_lo,
                              bit<1> meter_policy_en,
                              bit<16> meter_class) {
         meta.dst_vnet_id = dst_vnet_id;
-        meta.lkup_dst_ip_addr = overlay_ip;
+        meta.lkup_dst_ip_addr_hi = overlay_ip_hi;
+        meta.lkup_dst_ip_addr_lo = overlay_ip_lo;
         meta.is_lkup_dst_ip_v6 = is_overlay_ip_v4_or_v6;
         set_route_meter_attrs(meter_policy_en, meter_class);
     }
@@ -43,17 +45,23 @@ control outbound(inout headers_t hdr,
     }
 
     action route_service_tunnel(bit<1> is_overlay_dip_v4_or_v6,
-                                IPv4ORv6Address overlay_dip,
+                                HalfIPv4ORv6Address overlay_dip_hi,
+                                HalfIPv4ORv6Address overlay_dip_lo,
                                 bit<1> is_overlay_dip_mask_v4_or_v6,
-                                IPv4ORv6Address overlay_dip_mask,
+                                HalfIPv4ORv6Address overlay_dip_mask_hi,
+                                HalfIPv4ORv6Address overlay_dip_mask_lo,
                                 bit<1> is_overlay_sip_v4_or_v6,
-                                IPv4ORv6Address overlay_sip,
+                                HalfIPv4ORv6Address overlay_sip_hi,
+                                HalfIPv4ORv6Address overlay_sip_lo,
                                 bit<1> is_overlay_sip_mask_v4_or_v6,
-                                IPv4ORv6Address overlay_sip_mask,
+                                HalfIPv4ORv6Address overlay_sip_mask_hi,
+                                HalfIPv4ORv6Address overlay_sip_mask_lo,
                                 bit<1> is_underlay_dip_v4_or_v6,
-                                IPv4ORv6Address underlay_dip,
+                                HalfIPv4ORv6Address underlay_dip_hi,
+                                HalfIPv4ORv6Address underlay_dip_lo,
                                 bit<1> is_underlay_sip_v4_or_v6,
-                                IPv4ORv6Address underlay_sip,
+                                HalfIPv4ORv6Address underlay_sip_hi,
+                                HalfIPv4ORv6Address underlay_sip_lo,
                                 dash_encapsulation_t dash_encapsulation,
                                 bit<24> tunnel_key,
                                 bit<1> meter_policy_en,
@@ -66,14 +74,19 @@ control outbound(inout headers_t hdr,
         meta.encap_data.original_overlay_sip = hdr.ipv4.dst_addr;
 
         service_tunnel_encode(hdr,
-                              overlay_dip,
-                              overlay_dip_mask,
-                              overlay_sip,
-                              overlay_sip_mask);
+                              overlay_dip_hi,
+                              overlay_dip_lo,
+                              overlay_dip_mask_hi,
+                              overlay_dip_mask_lo,
+                              overlay_sip_hi,
+                              overlay_sip_lo,
+                              overlay_sip_mask_hi,
+                              overlay_sip_mask_lo);
 
         /* encapsulation will be done in apply block based on dash_encapsulation */
-        meta.encap_data.underlay_dip = underlay_dip == 0 ? meta.encap_data.original_overlay_dip : (IPv4Address)underlay_dip;
-        meta.encap_data.underlay_sip = underlay_sip == 0 ? meta.encap_data.original_overlay_sip : (IPv4Address)underlay_sip;
+        bool underlay_dip_is_0 = (underlay_dip_hi == 0) && (underlay_dip_lo == 0);
+        meta.encap_data.underlay_dip = underlay_dip_is_0 ? meta.encap_data.original_overlay_dip : (IPv4Address)underlay_dip_lo;
+        meta.encap_data.underlay_sip = underlay_dip_is_0 ? meta.encap_data.original_overlay_sip : (IPv4Address)underlay_sip_lo;
         meta.encap_data.overlay_dmac = hdr.ethernet.dst_addr;
         meta.encap_data.dash_encapsulation = dash_encapsulation;
         meta.encap_data.service_tunnel_key = tunnel_key;
@@ -96,7 +109,8 @@ control outbound(inout headers_t hdr,
         key = {
             meta.eni_id : exact @name("meta.eni_id:eni_id");
             meta.is_overlay_ip_v6 : exact @name("meta.is_overlay_ip_v6:is_destination_v4_or_v6");
-            meta.dst_ip_addr : lpm @name("meta.dst_ip_addr:destination");
+            meta.dst_ip_addr_hi : lpm @name("meta.dst_ip_addr_hi:destination");
+            //meta.dst_ip_addr_lo : lpm @name("meta.dst_ip_addr_lo:destination");
         }
 
         actions = {
@@ -147,7 +161,8 @@ control outbound(inout headers_t hdr,
             /* Flow for express route */
             meta.dst_vnet_id: exact @name("meta.dst_vnet_id:dst_vnet_id");
             meta.is_lkup_dst_ip_v6 : exact @name("meta.is_lkup_dst_ip_v6:is_dip_v4_or_v6");
-            meta.lkup_dst_ip_addr : exact @name("meta.lkup_dst_ip_addr:dip");
+            meta.lkup_dst_ip_addr_hi : exact @name("meta.lkup_dst_ip_addr_hi:dip");
+            meta.lkup_dst_ip_addr_lo : exact @name("meta.lkup_dst_ip_addr_lo:dip");
         }
 
         actions = {
@@ -203,7 +218,8 @@ control outbound(inout headers_t hdr,
         ConntrackIn.apply(hdr, meta);
 #endif // PNA_CONNTRACK
 
-        meta.lkup_dst_ip_addr = meta.dst_ip_addr;
+        meta.lkup_dst_ip_addr_hi = meta.dst_ip_addr_hi;
+        meta.lkup_dst_ip_addr_lo = meta.dst_ip_addr_lo;
         meta.is_lkup_dst_ip_v6 = meta.is_overlay_ip_v6;
 
         switch (routing.apply().action_run) {

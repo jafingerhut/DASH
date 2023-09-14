@@ -4,7 +4,9 @@
 typedef bit<48>  EthernetAddress;
 typedef bit<32>  IPv4Address;
 typedef bit<128> IPv6Address;
+typedef bit<64> HalfIPv6Address;
 typedef bit<128> IPv4ORv6Address;
+typedef bit<64> HalfIPv4ORv6Address;
 
 header ethernet_t {
     EthernetAddress dst_addr;
@@ -87,8 +89,10 @@ header ipv6_t {
     bit<16>     payload_length;
     bit<8>      next_header;
     bit<8>      hop_limit;
-    IPv6Address src_addr;
-    IPv6Address dst_addr;
+    HalfIPv6Address src_addr_hi;
+    HalfIPv6Address src_addr_lo;
+    HalfIPv6Address dst_addr_hi;
+    HalfIPv6Address dst_addr_lo;
 }
 
 const bit<16> IPV6_HDR_SIZE=320/8;

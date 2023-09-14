@@ -38,8 +38,10 @@ match_kind {
         key = { \
             meta. ## table_name ##_dash_acl_group_id : exact @name("meta.dash_acl_group_id:dash_acl_group_id") \
             @Sai[type="sai_object_id_t", isresourcetype="true", objects="SAI_OBJECT_TYPE_DASH_ACL_GROUP"]; \
-            meta.dst_ip_addr : LIST_MATCH @name("meta.dst_ip_addr:dip"); \
-            meta.src_ip_addr : LIST_MATCH @name("meta.src_ip_addr:sip"); \
+            meta.dst_ip_addr_hi : LIST_MATCH @name("meta.dst_ip_addr_hi:dip"); \
+            meta.dst_ip_addr_lo : LIST_MATCH @name("meta.dst_ip_addr_lo:dip"); \
+            meta.src_ip_addr_hi : LIST_MATCH @name("meta.src_ip_addr_hi:sip"); \
+            meta.src_ip_addr_hi : LIST_MATCH @name("meta.src_ip_addr_lo:sip"); \
             meta.ip_protocol : LIST_MATCH @name("meta.ip_protocol:protocol"); \
             meta.src_l4_port : RANGE_LIST_MATCH @name("meta.src_l4_port:src_port"); \
             meta.dst_l4_port : RANGE_LIST_MATCH @name("meta.dst_l4_port:dst_port"); \
@@ -74,8 +76,10 @@ match_kind {
     table table_name { \
         key = { \
             meta. ## table_name ##_dash_acl_group_id : exact @name("meta.dash_acl_group_id:dash_acl_group_id"); \
-            meta.dst_ip_addr : LIST_MATCH @name("meta.dst_ip_addr:dip"); \
-            meta.src_ip_addr : LIST_MATCH @name("meta.src_ip_addr:sip"); \
+            meta.dst_ip_addr_hi : LIST_MATCH @name("meta.dst_ip_addr_hi:dip"); \
+            meta.dst_ip_addr_lo : LIST_MATCH @name("meta.dst_ip_addr_lo:dip"); \
+            meta.src_ip_addr_hi : LIST_MATCH @name("meta.src_ip_addr_hi:sip"); \
+            meta.src_ip_addr_lo : LIST_MATCH @name("meta.src_ip_addr_lo:sip"); \
             meta.ip_protocol : LIST_MATCH @name("meta.ip_protocol:protocol"); \
             meta.src_l4_port : RANGE_LIST_MATCH @name("meta.src_l4_port:src_port"); \
             meta.dst_l4_port : RANGE_LIST_MATCH @name("meta.dst_l4_port:dst_port"); \

@@ -49,9 +49,12 @@ struct metadata_t {
     bit<1> is_overlay_ip_v6;
     bit<1> is_lkup_dst_ip_v6;
     bit<8> ip_protocol;
-    IPv4ORv6Address dst_ip_addr;
-    IPv4ORv6Address src_ip_addr;
-    IPv4ORv6Address lkup_dst_ip_addr;
+    HalfIPv4ORv6Address dst_ip_addr_hi;
+    HalfIPv4ORv6Address dst_ip_addr_lo;
+    HalfIPv4ORv6Address src_ip_addr_hi;
+    HalfIPv4ORv6Address src_ip_addr_lo;
+    HalfIPv4ORv6Address lkup_dst_ip_addr_hi;
+    HalfIPv4ORv6Address lkup_dst_ip_addr_lo;
     conntrack_data_t conntrack_data;
     bit<16> src_l4_port;
     bit<16> dst_l4_port;

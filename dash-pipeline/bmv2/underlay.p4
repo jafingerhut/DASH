@@ -72,7 +72,8 @@ control underlay(
     // TODO: To add structural annotations (example: @Sai[skipHeaderGen=true])
     table underlay_routing {
         key = {
-            meta.dst_ip_addr : lpm @name("meta.dst_ip_addr:destination");
+            meta.dst_ip_addr_hi : lpm @name("meta.dst_ip_addr_hi:destination");
+            //meta.dst_ip_addr_lo : lpm @name("meta.dst_ip_addr_lo:destination");
         }
 
         actions = {

@@ -395,17 +395,23 @@ control dash_ingress(
 
         meta.is_overlay_ip_v6 = 0;
         meta.ip_protocol = 0;
-        meta.dst_ip_addr = 0;
-        meta.src_ip_addr = 0;
+        meta.dst_ip_addr_hi = 0;
+        meta.dst_ip_addr_lo = 0;
+        meta.src_ip_addr_hi = 0;
+        meta.src_ip_addr_lo = 0;
         if (hdr.ipv6.isValid()) {
             meta.ip_protocol = hdr.ipv6.next_header;
-            meta.src_ip_addr = hdr.ipv6.src_addr;
-            meta.dst_ip_addr = hdr.ipv6.dst_addr;
+            meta.src_ip_addr_hi = hdr.ipv6.src_addr_hi;
+            meta.src_ip_addr_lo = hdr.ipv6.src_addr_lo;
+            meta.dst_ip_addr_hi = hdr.ipv6.dst_addr_hi;
+            meta.dst_ip_addr_lo = hdr.ipv6.dst_addr_lo;
             meta.is_overlay_ip_v6 = 1;
         } else if (hdr.ipv4.isValid()) {
             meta.ip_protocol = hdr.ipv4.protocol;
-            meta.src_ip_addr = (bit<128>)hdr.ipv4.src_addr;
-            meta.dst_ip_addr = (bit<128>)hdr.ipv4.dst_addr;
+            meta.src_ip_addr_hi = 0;
+            meta.src_ip_addr_lo = (bit<64>)hdr.ipv4.src_addr;
+            meta.dst_ip_addr_hi = 0;
+            meta.dst_ip_addr_lo = (bit<64>)hdr.ipv4.dst_addr;
         }
 
         if (hdr.tcp.isValid()) {
@@ -430,7 +436,8 @@ control dash_ingress(
         }
 
         /* Underlay routing */
-        meta.dst_ip_addr = (bit<128>)hdr.ipv4.dst_addr;
+        meta.dst_ip_addr_hi = 0;
+        meta.dst_ip_addr_lo = (bit<64>)hdr.ipv4.dst_addr;
         underlay.apply(
               hdr
             , meta
